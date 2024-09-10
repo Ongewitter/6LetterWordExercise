@@ -9,12 +9,16 @@ class Program
     {
         var targetLength = 6; // Word length we are looking for
 
-        HashSet<string> lineSet = new(GetInput()); // Performant and gets rid of duplicates: https://learn.microsoft.com/en-us/dotnet/fundamentals/runtime-libraries/system-collections-generic-hashset%7Bt%7D
-        List<string> validCombinations = GetCombinations(lineSet, targetLength);
+        try
+        {
+            HashSet<string> lineSet = new(GetInput()); // Performant and gets rid of duplicates: https://learn.microsoft.com/en-us/dotnet/fundamentals/runtime-libraries/system-collections-generic-hashset%7Bt%7D
+            List<string> validCombinations = GetCombinations(lineSet, targetLength);
 
-        Console.WriteLine($"Found {validCombinations.Count} valid combinations"); // Fun metrics are fun
-        WriteAll(validCombinations); // Handle output
-
+            Console.WriteLine($"Found {validCombinations.Count} valid combinations"); // Fun metrics are fun
+            WriteAll(validCombinations); // Handle output
+        }
+        catch (FileNotFoundException) { Console.WriteLine("Input file not found"); }
+        catch (IOException) { Console.WriteLine("An error occurred while trying to open the input file"); }
     }
 
     private static string[] GetInput()
@@ -32,6 +36,8 @@ class Program
     }
     private static void GetCombinationsRecursive(HashSet<string> lineSet, HashSet<string> targetWords, string current, string separatedCurrent, int targetLength, List<string> result)
     {
+        if (lineSet is null || result is null || current is null || separatedCurrent is null) { return; } // Safety checks
+
         if (current.Length == targetLength)
         {
             if (lineSet.Contains(current))
@@ -41,8 +47,11 @@ class Program
             return;
         }
 
+
         foreach (var line in lineSet)
         {
+            if (line is null || line.Length == 0) { continue; } // Skip erronous data, also skip empty lines to prevent StackOverflow
+
             if (current.Length + line.Length <= targetLength)
             {
                 var newCurrent = current + line;
